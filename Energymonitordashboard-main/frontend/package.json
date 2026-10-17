@@ -1,0 +1,20 @@
+{
+  "name": "energy-monitor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.2.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "cors": "^2.8.6",
+    "express": "^4.19.2",
+    "mongodb": "^6.21.0"
+  }
+}

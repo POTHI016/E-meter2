@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Armstrong Energy Monitoring</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Roboto+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module" crossorigin src="/assets/index-D-JYkssR.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-m4wH4tie.css">
+</head>
+
+<body>
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-split-container">
+      <div class="login-form-container">
+        <div class="login-form-header">
+          <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <img src="/armstrong-logo-final.png" alt="Armstrong" style="height: 65px; width: auto; object-fit: contain;">
+          </div>
+          <p
+            style="text-transform: uppercase; letter-spacing: 1px; font-weight: bold; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Energy Monitoring Terminal</p>
+        </div>
+
+        <form id="login-form" autocomplete="off">
+          <div class="login-field">
+            <label for="login-username"><i class="fa-solid fa-user"></i> USERNAME</label>
+            <input type="text" id="login-username" placeholder="Enter username" required autocomplete="off">
+          </div>
+          <div class="login-field">
+            <label for="login-password"><i class="fa-solid fa-lock"></i> PASSWORD</label>
+            <div class="password-wrapper">
+              <input type="password" id="login-password" placeholder="Enter password" required autocomplete="off">
+              <button type="button" id="toggle-password" class="toggle-pw-btn"><i class="fa-solid fa-eye"></i></button>
+            </div>
+          </div>
+          <div class="login-field">
+            <label for="login-role"><i class="fa-solid fa-shield-halved"></i> ROLE</label>
+            <select id="login-role">
+              <option value="superadmin">Super Admin</option>
+              <option value="admin" selected>Admin</option>
+              <option value="engineer">Engineer</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </div>
+          <div id="login-error" class="login-error" style="display:none;"></div>
+          <button type="submit" class="login-btn"><i class="fa-solid fa-right-to-bracket"></i> ACCESS CONSOLE</button>
+        </form>
+
+        <div class="login-form-footer">
+          <span>&copy; 2026 ProtoWiz &middot; Armstrong. All rights reserved.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD (hidden until login) -->
+  <div class="app-layout" id="dashboard-layout" style="display:none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header" style="justify-content: center; padding: 1.5rem 0;">
+        <img src="/armstrong-logo-final.png" alt="Armstrong" style="max-width: 85%; height: auto; object-fit: contain;">
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-target="view-overview"><i class="fa-solid fa-house"></i> Overview</a>
+        <a href="#" class="nav-item" data-target="view-live"><i class="fa-solid fa-table-list"></i> Live Data</a>
+        <a href="#" class="nav-item" data-target="view-history"><i class="fa-solid fa-chart-line"></i> History Data</a>
+        <a href="#" class="nav-item" data-target="view-ranking"><i class="fa-solid fa-trophy"></i> Ranking</a>
+        <a href="#" class="nav-item" data-target="view-reports"><i class="fa-solid fa-print"></i> Report / Print</a>
+        <a href="#" class="nav-item" data-target="view-alerts"><i class="fa-solid fa-bell"></i> Alerts</a>
+        <a href="#" class="nav-item" data-target="view-settings"><i class="fa-solid fa-gear"></i> Settings</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-indicator"
+          style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="toggleGateway()">
+            <div class="status-dot" id="gateway-dot"></div>
+            <span id="gateway-text">GATEWAY ONLINE</span>
+          </div>
+          <button id="gateway-refresh-btn" onclick="toggleGateway()"
+            style="display:none; background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size: 0.9rem;"
+            title="Reconnect Gateway">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+        <div class="hardware-id" id="sidebar-user-label">USER: ADMIN</div>
+        <button id="btn-logout"
+          style="margin-top:0.5rem; background:transparent; border:1px solid var(--border-highlight); color:var(--text-muted); padding:0.3rem 0.6rem; border-radius:4px; font-family:var(--font-heading); font-size:0.7rem; cursor:pointer; width:100%; text-transform:uppercase; transition:all 0.2s;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+          <!-- Global Filters -->
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div class="unit-toggle-container"
+              style="margin-right: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size:0.8rem;font-weight:bold;color:var(--text-muted)">kW</span>
+              <label class="switch">
+                <input type="checkbox" id="unit-toggle" aria-label="Switch power to watts and energy to watt-hours">
+                <span class="slider round"></span>
+              </label>
+              <span style="font-size:0.8rem;font-weight:bold;color:var(--text-muted)">W</span>
+            </div>
+
+            <div id="header-date-filter-container" style="display:none; align-items:center; gap:0.5rem;">
+              <label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted)">FROM</label>
+              <input type="date" id="filter-date-from" class="filter-select"
+                style="padding: 0.3rem 0.5rem; font-family: var(--font-mono); border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
+              <label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted)">TO</label>
+              <input type="date" id="filter-date-to" class="filter-select"
+                style="padding: 0.3rem 0.5rem; font-family: var(--font-mono); border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
+              <button id="btn-query-history" class="action-btn" style="background: linear-gradient(135deg, var(--accent-orange), #c2410c); color: white; padding: 0.3rem 0.7rem; font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; height: 30px; letter-spacing: 0.5px; margin-left: 0.5rem;">
+                <i class="fa-solid fa-magnifying-glass"></i> QUERY
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="timestamp" id="live-time">12:00:00 AM</div>
+      </header>
+
+      <div class="dashboard-scroll-area">
+
+        <!-- ==================== OVERVIEW VIEW ==================== -->
+        <div id="view-overview" class="page-view active">
+          <h3 class="main-section-title"><i class="fa-solid fa-chart-pie"></i> ENTERPRISE OVERVIEW</h3>
+          <div class="live-usage-toolbar">
+            <label class="live-usage-field">Meter <select id="overview-filter-meter"><option value="ALL">All Meters</option></select></label>
+            <div class="overview-period-buttons" role="group" aria-label="Overview usage period">
+              <button type="button" data-period="day" aria-pressed="true">Day</button>
+              <button type="button" data-period="month" aria-pressed="false">Month</button>
+              <button type="button" data-period="year" aria-pressed="false">Year</button>
+              <button type="button" data-period="range" aria-pressed="false">Range</button>
+            </div>
+            <label class="live-usage-field">Date <input id="overview-date" type="date"></label>
+            <label class="live-usage-field" hidden>Month <input id="overview-month" type="month"></label>
+            <label class="live-usage-field" hidden>Year <input id="overview-year" type="number" min="2000" max="2100" step="1"></label>
+            <label class="live-usage-field" hidden>From <input id="overview-from-date" type="date"></label>
+            <label class="live-usage-field" hidden>To <input id="overview-to-date" type="date"></label>
+            <label class="live-usage-field">Breakdown <select id="overview-granularity"><option value="hour">Hourly</option><option value="minute">By Minute</option></select></label>
+            <label class="live-time-toggle" id="overview-time-toggle"><input id="overview-time-range" type="checkbox"> Time Range</label>
+            <div id="overview-time-inputs" class="live-time-inputs" hidden>
+              <label class="live-usage-field">From <input id="overview-from-time" type="time" value="08:00"></label>
+              <label class="live-usage-field">To <input id="overview-to-time" type="time" value="17:00"></label>
+            </div>
+            <div class="live-unit-control">
+              <span>kW</span><label class="switch"><input id="overview-unit-toggle" data-unit-toggle type="checkbox" aria-label="Switch power to watts and energy to watt-hours"><span class="slider round"></span></label><span>W</span>
+            </div>
+          </div>
+          <div id="overview-status" class="live-usage-status" role="status"></div>
+          <div class="overview-kpis">
+            <div class="live-summary-card" style="--metric-color:#16a34a;">
+              <div class="live-summary-label"><i class="fa-solid fa-play" aria-hidden="true"></i>Running Hours</div>
+              <div class="live-summary-value" id="kpi-active-hours">-</div>
+              <div class="live-summary-period" id="kpi-active-pct"></div>
+            </div>
+            <div class="live-summary-card" style="--metric-color:#d97706;">
+              <div class="live-summary-label"><i class="fa-solid fa-pause" aria-hidden="true"></i>Idle Hours</div>
+              <div class="live-summary-value" id="kpi-idle-hours">-</div>
+              <div class="live-summary-period" id="kpi-idle-pct"></div>
+            </div>
+            <div class="live-summary-card" style="--metric-color:#2563eb;">
+              <div class="live-summary-label"><i class="fa-solid fa-bolt" aria-hidden="true"></i>Total Energy Consumed</div>
+              <div class="live-summary-value" id="kpi-energy">-</div>
+              <div class="live-summary-period" id="kpi-energy-cmp"></div>
+            </div>
+          </div>
+          <div class="overview-live-metrics">
+            <div><span>Live Power (<span class="unit-label">kW</span>)</span><strong id="kpi-demand">-</strong></div>
+            <div><span>Live Average Power Factor</span><strong id="kpi-pf">-</strong></div>
+            <div><span>Reporting Meters</span><strong id="kpi-meters">0 / 0</strong></div>
+          </div>
+          <section class="live-usage-breakdown" aria-labelledby="overview-meter-title">
+            <div class="live-breakdown-heading"><h4 id="overview-meter-title">Meter Usage</h4><span id="overview-meter-period"></span></div>
+            <div class="live-usage-table-scroll">
+              <table class="data-table">
+                <thead><tr><th>Meter</th><th>Reporting</th><th>Running Hours</th><th>Idle Hours</th><th>Energy (<span class="overview-energy-unit">kWh</span>)</th><th>Unrecorded Time</th><th>Live Power (<span class="unit-label">kW</span>)</th><th>Live PF</th></tr></thead>
+                <tbody id="overview-meter-rows"></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="live-usage-breakdown" aria-labelledby="overview-breakdown-title">
+            <div class="live-breakdown-heading"><h4 id="overview-breakdown-title">Usage Breakdown</h4><span id="overview-breakdown-period"></span></div>
+            <div class="live-usage-table-scroll">
+              <table class="data-table">
+                <thead><tr><th>Period</th><th>Running Hours</th><th>Idle Hours</th><th>Total Energy Consumed (<span class="overview-energy-unit">kWh</span>)</th></tr></thead>
+                <tbody id="overview-usage-rows"></tbody>
+              </table>
+            </div>
+            <div id="overview-pagination" class="live-usage-pagination" hidden>
+              <button id="overview-prev" type="button" aria-label="Previous results" title="Previous results"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button><span id="overview-page"></span>
+              <button id="overview-next" type="button" aria-label="Next results" title="Next results"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+            </div>
+          </section>
+          <section class="live-usage-graph" aria-labelledby="overview-graph-title">
+            <div class="live-breakdown-heading"><h4 id="overview-graph-title">Usage Graph</h4><span id="overview-graph-period"></span><button id="overview-back" class="live-graph-back" type="button" hidden title="Return to the previous usage period"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button></div>
+            <div class="live-graph-controls" role="group" aria-label="Overview graph measurements">
+              <label class="live-graph-series" style="--series-color:#16a34a;"><input id="overview-running" type="checkbox" checked><span class="live-graph-swatch"></span>Running Hours</label>
+              <label class="live-graph-series" style="--series-color:#d97706;"><input id="overview-idle" type="checkbox" checked><span class="live-graph-swatch"></span>Idle Hours</label>
+              <label class="live-graph-series" style="--series-color:#2563eb;"><input id="overview-energy" type="checkbox" checked><span class="live-graph-swatch live-graph-column-swatch"></span><span>Energy Consumed (<span class="overview-energy-unit">kWh</span>)</span></label>
+              <div class="graph-unit-control live-unit-control"><span>kW</span><label class="switch"><input id="overview-graph-unit-toggle" data-unit-toggle type="checkbox" aria-label="Switch power to watts and energy to watt-hours"><span class="slider round"></span></label><span>W</span></div>
+            </div>
+            <p id="overview-timeline-note" class="live-usage-status" hidden>Some older intervals have duration totals only; their state order is unavailable.</p>
+            <div class="live-graph-plot">
+              <canvas id="overview-chart" role="img" aria-label="Running hours, idle hours, and energy consumed for the selected meters and period"></canvas>
+              <div id="overview-graph-empty" class="live-graph-empty" role="status">No readings for this period</div>
+            </div>
+          </section>
+        </div>
+        <!-- ==================== LIVE DATA VIEW ==================== -->
+        <div id="view-live" class="page-view" style="display:none;">
+
+          <!-- SUB-PAGE 1: Meter Selection -->
+          <div id="live-sub-selection">
+            <h3 class="main-section-title"><i class="fa-solid fa-bolt"></i> LIVE DATA — SELECT METER</h3>
+            <!-- Filters -->
+            <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center; margin-bottom:1.5rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <label style="font-size:0.8rem; font-weight:600; color:var(--text-sub);">Building:</label>
+                <select id="live-filter-bldg" style="padding:0.35rem 0.6rem; border-radius:6px; border:1px solid #cbd5e1; font-size:0.85rem;">
+                  <option value="ALL">All Buildings</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <label style="font-size:0.8rem; font-weight:600; color:var(--text-sub);">Floor:</label>
+                <select id="live-filter-floor" style="padding:0.35rem 0.6rem; border-radius:6px; border:1px solid #cbd5e1; font-size:0.85rem;">
+                  <option value="ALL">All Floors</option>
+                </select>
+              </div>
+              <!-- Hidden meter select (kept for JS compatibility) -->
+              <select id="live-filter-meter" style="display:none;">
+                <option value="ALL">All Meters</option>
+              </select>
+            </div>
+            <!-- Meter Buttons Grid -->
+            <div id="live-meter-buttons" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- SUB-PAGE 2: Meter Detail -->
+          <div id="live-sub-detail" style="display:none;">
+            <!-- Back Button + Meter Title -->
+            <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+              <button id="live-back-btn" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:0.5rem 1rem; cursor:pointer; font-size:0.85rem; font-weight:600; color:#334155; display:flex; align-items:center; gap:0.5rem;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Meters
+              </button>
+              <h3 class="main-section-title" id="live-detail-title" style="margin:0;"><i class="fa-solid fa-meter"></i> --</h3>
+              <span id="live-detail-status-badge" style="padding:0.25rem 0.75rem; border-radius:99px; font-size:0.8rem; font-weight:700; background:#dcfce7; color:#16a34a;">ONLINE</span>
+            </div>
+
+            <!-- Info Row: Location -->
+            <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.5rem;" id="live-detail-location"></div>
+
+            <div class="live-usage-toolbar">
+              <div class="live-period-buttons" role="group" aria-label="Usage period">
+                <button type="button" data-period="day" aria-pressed="true">Day</button>
+                <button type="button" data-period="month" aria-pressed="false">Month</button>
+                <button type="button" data-period="year" aria-pressed="false">Year</button>
+              </div>
+              <label class="live-usage-field">Date <input id="live-usage-date" type="date"></label>
+              <label class="live-usage-field" hidden>Month <input id="live-usage-month" type="month"></label>
+              <label class="live-usage-field" hidden>Year <input id="live-usage-year" type="number" min="2000" max="2100" step="1"></label>
+              <label class="live-usage-field">Breakdown <select id="live-usage-granularity"><option value="hour">Hourly</option><option value="minute">By Minute</option></select></label>
+              <label class="live-time-toggle"><input id="live-time-range" type="checkbox"> Time Range</label>
+              <div id="live-time-inputs" class="live-time-inputs" hidden>
+                <label class="live-usage-field">From <input id="live-usage-from" type="time" value="08:00"></label>
+                <label class="live-usage-field">To <input id="live-usage-to" type="time" value="17:00"></label>
+              </div>
+              <div class="live-unit-control">
+                <span>kW</span><label class="switch"><input id="live-unit-toggle" data-unit-toggle type="checkbox" aria-label="Switch power to watts and energy to watt-hours"><span class="slider round"></span></label><span>W</span>
+              </div>
+            </div>
+            <div id="live-usage-status" class="live-usage-status" role="status"></div>
+
+            <div class="live-detail-carousel" role="region" aria-roledescription="carousel" aria-label="Meter parameters">
+              <div id="live-detail-cards" class="live-detail-pages">
+                <!-- Populated by JS -->
+              </div>
+              <div class="live-carousel-dots" role="group" aria-label="Meter parameter pages">
+                <button type="button" class="live-carousel-dot" data-slide="0" aria-label="Energy and hours" aria-controls="live-detail-slide-0" aria-pressed="true" title="Energy and hours"></button>
+                <button type="button" class="live-carousel-dot" data-slide="1" aria-label="Voltage and current" aria-controls="live-detail-slide-1" aria-pressed="false" title="Voltage and current"></button>
+                <button type="button" class="live-carousel-dot" data-slide="2" aria-label="Power and other parameters" aria-controls="live-detail-slide-2" aria-pressed="false" title="Power and other parameters"></button>
+              </div>
+            </div>
+            <div class="live-usage-breakdown">
+              <div class="live-breakdown-heading"><h4>Usage Breakdown</h4><span id="live-usage-period-label"></span></div>
+              <div class="live-usage-table-scroll">
+                <table class="data-table">
+                  <thead><tr><th>Period</th><th>Running Hours</th><th>Idle Hours</th><th>Total Energy Consumed (<span id="live-usage-energy-unit">kWh</span>)</th></tr></thead>
+                  <tbody id="live-usage-rows"></tbody>
+                </table>
+              </div>
+              <div id="live-usage-pagination" class="live-usage-pagination" hidden>
+                <button id="live-usage-prev" type="button" aria-label="Previous results" title="Previous results"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                <span id="live-usage-page"></span>
+                <button id="live-usage-next" type="button" aria-label="Next results" title="Next results"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+              </div>
+            </div>
+            <section class="live-usage-graph" aria-labelledby="live-graph-title">
+              <div class="live-breakdown-heading"><h4 id="live-graph-title">Usage Graph</h4><span id="live-graph-period-label"></span><button id="live-graph-back" class="live-graph-back" type="button" hidden title="Return to the previous usage period"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button></div>
+              <div class="live-graph-controls" role="group" aria-label="Graph measurements">
+                <label class="live-graph-series" style="--series-color:#16a34a;"><input id="live-graph-running" type="checkbox" checked><span class="live-graph-swatch"></span>Running Hours</label>
+                <label class="live-graph-series" style="--series-color:#d97706;"><input id="live-graph-idle" type="checkbox" checked><span class="live-graph-swatch"></span>Idle Hours</label>
+                <label class="live-graph-series" style="--series-color:#2563eb;"><input id="live-graph-energy" type="checkbox" checked><span class="live-graph-swatch live-graph-column-swatch"></span><span>Energy Consumed (<span id="live-graph-energy-unit">kWh</span>)</span></label>
+                <div class="graph-unit-control live-unit-control"><span>kW</span><label class="switch"><input id="live-graph-unit-toggle" data-unit-toggle type="checkbox" aria-label="Switch power to watts and energy to watt-hours"><span class="slider round"></span></label><span>W</span></div>
+              </div>
+              <p id="live-timeline-note" class="live-usage-status" hidden>Some older intervals have duration totals only; their state order is unavailable.</p>
+              <div class="live-graph-plot">
+                <canvas id="live-usage-chart" role="img" aria-label="Running hours, idle hours, and energy consumed for the selected period"></canvas>
+                <div id="live-graph-empty" class="live-graph-empty" role="status">No readings for this period</div>
+              </div>
+            </section>
+          </div>
+
+        </div>
+        <!-- ==================== HISTORY DATA VIEW ==================== -->
+        <div id="view-history" class="page-view" style="display:none;">
+          <h3 class="main-section-title"><i class="fa-solid fa-chart-line"></i> HISTORY DATA</h3>
+          <div class="module mt-1">
+            <div class="module-header">
+              <span><i class="fa-solid fa-chart-area"></i> CONSUMPTION TREND (LAST 30 DAYS)</span>
+            </div>
+            <div class="panel" style="border:none; box-shadow:none;">
+              <div class="chart-container" style="height:300px;">
+                <canvas id="trendChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="module mt-1">
+            <div class="module-header">
+              <span><i class="fa-solid fa-table"></i> HISTORY DATA TABLE</span>
+              <button id="btn-export-history" class="action-btn green-btn"
+                style="font-size:0.75rem; padding:0.3rem 0.7rem;">
+                <i class="fa-solid fa-file-excel"></i> EXPORT
+              </button>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="data-table" id="history-data-table">
+                <thead>
+                  <tr>
+                    <th>DATE</th>
+                    <th>BUILDING</th>
+                    <th>FLOOR</th>
+                    <th>ENERGY (kWh)</th>
+                    <th>PEAK DEMAND (kW)</th>
+                    <th>AVG PF</th>
+                  </tr>
+                </thead>
+                <tbody id="history-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== RANKING VIEW ==================== -->
+        <div id="view-ranking" class="page-view" style="display:none;">
+<h3 class="main-section-title"><i class="fa-solid fa-trophy"></i> METER RANKING</h3>
+<div class="usage-report-filters">
+<label>Period<select id="ranking-period" class="filter-select"><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="range">Date Range</option></select></label>
+<label>Date<input type="date" id="ranking-date" class="filter-select"></label>
+<label>Month<input type="month" id="ranking-month" class="filter-select"></label>
+<label>Year<input type="number" min="2000" max="2100" id="ranking-year" class="filter-select"></label>
+<label>From<input type="date" id="ranking-date-from" class="filter-select"></label>
+<label>To<input type="date" id="ranking-date-to" class="filter-select"></label>
+<label>Building<select id="ranking-building-select" class="filter-select"><option value="ALL">All Buildings</option></select></label>
+<label>Rank By<select id="ranking-metric" class="filter-select"><option value="energyConsumedKwh">Energy Consumed</option><option value="runningSeconds">Running Hours</option><option value="idleSeconds">Idle Hours</option></select></label>
+</div>
+<p id="ranking-status" role="status"></p>
+<div class="usage-report-table"><table class="data-table"><thead><tr><th>Rank</th><th>Meter</th><th>Building</th><th>Floor</th><th>Running Hours</th><th>Idle Hours</th><th>Energy (<span class="ranking-energy-unit">kWh</span>)</th><th>Unrecorded Time</th><th>Data Quality</th></tr></thead><tbody id="ranking-tbody"><tr><td colspan="9">No usage data</td></tr></tbody></table></div>
+<h4>Top 10 Meters</h4>
+<div class="usage-report-graph"><canvas id="ranking-usage-chart"></canvas><p id="ranking-chart-empty">No readings for this period</p></div>
+</div>
+<div id="view-reports" class="page-view" style="display:none;">
+<h3 class="main-section-title"><i class="fa-solid fa-print"></i> USAGE REPORT</h3>
+<div class="usage-report-filters">
+<label>Period<select id="report-period" class="filter-select"><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="range">Date Range</option></select></label>
+<label>Date<input type="date" id="report-date" class="filter-select"></label>
+<label>Month<input type="month" id="report-month" class="filter-select"></label>
+<label>Year<input type="number" min="2000" max="2100" id="report-year" class="filter-select"></label>
+<label>From<input type="date" id="report-date-from" class="filter-select"></label>
+<label>To<input type="date" id="report-date-to" class="filter-select"></label>
+<label>Building<select id="report-building-select" class="filter-select"><option value="ALL">All Buildings</option></select></label>
+<label>Floor<select id="report-floor-select" class="filter-select"><option value="ALL">All Floors</option></select></label><label>Meter<select id="report-meter-select" class="filter-select"><option value="ALL">All Meters</option></select></label><button type="button" id="btn-generate-report" class="action-btn orange-btn"><i class="fa-solid fa-file-invoice"></i> Generate</button><button type="button" id="btn-print-report" class="action-btn green-btn" disabled><i class="fa-solid fa-print"></i> Print</button>
+</div>
+<div id="report-output-area">
+<h2>ENERGY & MACHINE USAGE REPORT</h2>
+<p id="report-subtitle">No report generated</p><p id="report-generated-date"></p>
+<p id="report-status" role="status">Generate a report for the selected filters.</p>
+<div class="usage-report-kpis">
+<div class="kpi-card"><span>Total Energy Consumed</span><strong id="report-kpi-energy">-</strong></div>
+<div class="kpi-card"><span>Running Hours</span><strong id="report-kpi-hours">-</strong></div>
+<div class="kpi-card"><span>Idle Hours</span><strong id="report-kpi-idle">-</strong></div>
+<div class="kpi-card"><span>Unrecorded Time</span><strong id="report-kpi-unrecorded">-</strong></div>
+</div>
+<div class="usage-report-table"><table class="data-table"><thead><tr><th>Meter</th><th>Building</th><th>Floor</th><th>Running Hours</th><th>Idle Hours</th><th>Energy (<span class="report-energy-unit">kWh</span>)</th><th>Unrecorded Time</th><th>Data Quality</th></tr></thead><tbody id="report-tbody"><tr><td colspan="8">No usage data</td></tr></tbody></table></div>
+<h4>Energy Consumed by Meter</h4>
+<div class="usage-report-graph"><canvas id="report-usage-chart"></canvas><p id="report-chart-empty">No readings for this period</p></div>
+</div>
+</div>
+
+        <!-- ==================== ALERTS VIEW ==================== -->
+        <div id="view-alerts" class="page-view" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+            <h3 class="main-section-title" style="margin:0;"><i class="fa-solid fa-bell"></i> ALARMS</h3>
+
+            <div
+              style="display:flex; gap:1rem; align-items:center; background:white; padding:0.5rem 1rem; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted)">BUILDING:</label>
+                <select id="alerts-filter-building"
+                  style="padding:0.2rem 0.5rem; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; outline:none;">
+                  <option value="ALL">All Buildings</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted)">FLOOR:</label>
+                <select id="alerts-filter-floor"
+                  style="padding:0.2rem 0.5rem; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; outline:none;">
+                  <option value="ALL">All Floors</option>
+                </select>
+              </div>
+              <div style="width:1px; height:24px; background:#e2e8f0; margin:0 0.5rem;"></div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span id="alerts-status-text"
+                  style="font-size:0.8rem; font-weight:bold; color:var(--accent-green)">ENABLED</span>
+                <label class="switch" style="margin-bottom:0;">
+                  <input type="checkbox" id="alerts-toggle-switch" checked>
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;"><i
+              class="fa-regular fa-clock"></i> Realtime - last day</div>
+          <div class="module mt-1" style="overflow-x:auto;">
+            <table class="data-table" id="alerts-table">
+              <thead>
+                <tr>
+                  <th>Start time <i class="fa-solid fa-arrow-down" style="font-size: 0.7rem;"></i></th>
+                  <th>Originator</th>
+                  <th>Type</th>
+                  <th>Severity</th>
+                  <th>Status</th>
+                  <th>Alarm</th>
+                </tr>
+              </thead>
+              <tbody id="alerts-tbody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ==================== SETTINGS VIEW ==================== -->
+        <div id="view-settings" class="page-view" style="display:none;">
+          <h3 class="main-section-title"><i class="fa-solid fa-gear"></i> HARDWARE MANAGEMENT</h3>
+
+          <div class="settings-grid">
+            <!-- Add Building -->
+            <div class="module settings-card">
+              <div class="module-header">
+                <span><i class="fa-solid fa-building"></i> ADD BUILDING</span>
+              </div>
+              <div class="settings-form">
+                <div class="login-field">
+                  <label>BUILDING NAME</label>
+                  <input type="text" id="settings-building-name" placeholder="e.g. SSB-5">
+                </div>
+                <div class="login-field">
+                  <label>GRID SUPPLY (kW)</label>
+                  <input type="number" id="settings-building-grid" placeholder="e.g. 500" value="500">
+                </div>
+                <button type="button" id="btn-add-building" class="action-btn orange-btn">
+                  <i class="fa-solid fa-plus"></i> ADD BUILDING
+                </button>
+              </div>
+            </div>
+
+            <!-- Add Floor -->
+            <div class="module settings-card">
+              <div class="module-header">
+                <span><i class="fa-solid fa-layer-group"></i> ADD FLOOR</span>
+              </div>
+              <div class="settings-form">
+                <div class="login-field">
+                  <label>SELECT BUILDING</label>
+                  <select id="settings-floor-building">
+                    <!-- Populated by JS -->
+                  </select>
+                </div>
+                <div class="login-field">
+                  <label>FLOOR NAME</label>
+                  <input type="text" id="settings-floor-name" placeholder="e.g. 4th Floor">
+                </div>
+                <button type="button" id="btn-add-floor" class="action-btn orange-btn">
+                  <i class="fa-solid fa-plus"></i> ADD FLOOR
+                </button>
+              </div>
+            </div>
+
+            <!-- Add Meter -->
+            <div class="module settings-card">
+              <div class="module-header">
+                <span><i class="fa-solid fa-gauge-high"></i> ADD METER</span>
+              </div>
+              <div class="settings-form">
+                <div class="login-field">
+                  <label>SELECT BUILDING</label>
+                  <select id="settings-meter-building">
+                    <!-- Populated by JS -->
+                  </select>
+                </div>
+                <div class="login-field">
+                  <label>SELECT FLOOR</label>
+                  <select id="settings-meter-floor">
+                    <!-- Populated by JS -->
+                  </select>
+                </div>
+                <div class="login-field">
+                  <label>METER ID</label>
+                  <input type="text" id="settings-meter-id" placeholder="e.g. MTR-SSB5-001">
+                </div>
+                <div class="login-field">
+                  <label>PANEL</label>
+                  <input type="text" id="settings-meter-panel" placeholder="e.g. PDB-SSB5-1">
+                </div>
+                <button type="button" id="btn-add-meter" class="action-btn orange-btn">
+                  <i class="fa-solid fa-plus"></i> ADD METER
+                </button>
+              </div>
+            </div>
+
+            <!-- Alarm Thresholds -->
+            <div class="module settings-card">
+              <div class="module-header">
+                <span><i class="fa-solid fa-triangle-exclamation"></i> ALARM THRESHOLDS</span>
+              </div>
+              <div class="settings-form">
+                <div class="login-field">
+                  <label>SELECT BUILDING</label>
+                  <select id="settings-alarm-building">
+                    <!-- Populated by JS -->
+                  </select>
+                </div>
+                <div class="login-field">
+                  <label>SELECT FLOOR</label>
+                  <select id="settings-alarm-floor">
+                    <!-- Populated by JS -->
+                  </select>
+                </div>
+                <div class="login-field">
+                  <label>MAX VOLTAGE (V)</label>
+                  <input type="number" id="settings-alarm-voltage" placeholder="e.g. 240" value="240">
+                </div>
+                <div class="login-field">
+                  <label>MAX POWER (<span class="unit-label">kW</span>)</label>
+                  <input type="number" id="settings-alarm-power" placeholder="e.g. 5" value="5">
+                </div>
+                <button type="button" id="btn-save-alarms" class="action-btn orange-btn">
+                  <i class="fa-solid fa-floppy-disk"></i> SAVE LIMITS
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Configuration Summary -->
+          <div class="module mt-1">
+            <div class="module-header">
+              <span><i class="fa-solid fa-list"></i> CURRENT CONFIGURATION</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="config-summary-table">
+                <thead>
+                  <tr>
+                    <th>BUILDING</th>
+                    <th>FLOORS</th>
+                    <th>METERS</th>
+                    <th>GRID SUPPLY (kW)</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="config-summary-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Configured Meters Summary -->
+          <div class="module mt-1">
+            <div class="module-header">
+              <span><i class="fa-solid fa-gauge-high"></i> CONFIGURED METERS</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="configured-meters-table">
+                <thead>
+                  <tr>
+                    <th>METER ID</th>
+                    <th>NAME</th>
+                    <th>BUILDING</th>
+                    <th>FLOOR</th>
+                    <th>PANEL</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="configured-meters-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Gateway Disconnect Modal -->
+  <div id="gateway-modal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-content">
+      <div class="custom-modal-header">
+        <i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-orange); font-size: 1.5rem;"></i>
+        <h3>SYSTEM WARNING</h3>
+      </div>
+      <div class="custom-modal-body">
+        <p style="font-weight: bold;">Are you sure you want to disconnect the gateway?</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">This will immediately halt all
+          real-time data streaming and disable active alarms.</p>
+      </div>
+      <div class="custom-modal-footer">
+        <button id="btn-cancel-disconnect" class="btn-cancel">CANCEL</button>
+        <button id="btn-confirm-disconnect" class="btn-confirm">DISCONNECT</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
